@@ -121,33 +121,43 @@ export default function Home() {
       }
     };
 
-    // hide overflow as a fallback
-    const html = document.documentElement;
-    const body = document.body;
-    const prevHtmlOverflow = html.style.overflow;
-    const prevBodyOverflow = body.style.overflow;
-    html.style.overflow = 'hidden';
-    body.style.overflow = 'hidden';
+    // Only disable scroll on desktop (width >= 768px)
+    const isMobile = window.innerWidth < 768;
+    
+    if (!isMobile) {
+      // hide overflow as a fallback
+      const html = document.documentElement;
+      const body = document.body;
+      const prevHtmlOverflow = html.style.overflow;
+      const prevBodyOverflow = body.style.overflow;
+      html.style.overflow = 'hidden';
+      body.style.overflow = 'hidden';
 
-    window.addEventListener('wheel', prevent as EventListener, { passive: false });
-    window.addEventListener('touchmove', prevent as EventListener, { passive: false });
-    window.addEventListener('keydown', preventKey as any, { passive: false });
+      window.addEventListener('wheel', prevent as EventListener, { passive: false });
+      window.addEventListener('touchmove', prevent as EventListener, { passive: false });
+      window.addEventListener('keydown', preventKey as any, { passive: false });
 
-    return () => {
-      html.style.overflow = prevHtmlOverflow || '';
-      body.style.overflow = prevBodyOverflow || '';
-      window.removeEventListener('wheel', prevent as EventListener);
-      window.removeEventListener('touchmove', prevent as EventListener);
-      window.removeEventListener('keydown', preventKey as any);
-    };
+      return () => {
+        html.style.overflow = prevHtmlOverflow || '';
+        body.style.overflow = prevBodyOverflow || '';
+        window.removeEventListener('wheel', prevent as EventListener);
+        window.removeEventListener('touchmove', prevent as EventListener);
+        window.removeEventListener('keydown', preventKey as any);
+      };
+    }
   }, []);
 
   // animate section transitions when sectionIndex changes
   useEffect(() => {
     const el = sectionsRef.current;
     if (!el) return;
-    const y = -sectionIndex * window.innerHeight;
-    gsap.to(el, { y, duration: 0.8, ease: 'power2.inOut' });
+    
+    // Only use GSAP animation on desktop
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) {
+      const y = -sectionIndex * window.innerHeight;
+      gsap.to(el, { y, duration: 0.8, ease: 'power2.inOut' });
+    }
   }, [sectionIndex]);
 
   // Ensure the dino GIF keeps replaying by resetting its src periodically.
@@ -376,9 +386,9 @@ export default function Home() {
           </div>
         </section>
       </div>
-      {/* navigation buttons fixed: up and down - show only on sections 2 and 3 */}
-      {(sectionIndex === 1 || sectionIndex === 2) && (
-        <div className="absolute right-3 md:right-6 top-1/2 transform -translate-y-1/2 flex flex-col gap-2 md:gap-3 z-10">
+      {/* navigation buttons fixed: up and down - only show on desktop */}
+      <div className="hidden md:flex fixed right-3 md:right-6 top-1/2 transform -translate-y-1/2 flex-col gap-2 md:gap-3 z-50">
+        {sectionIndex > 0 && (
           <button
             onClick={() => setSectionIndex(Math.max(0, sectionIndex - 1))}
             aria-label="Previous section"
@@ -389,6 +399,8 @@ export default function Home() {
               <path d="M12 8l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+        )}
+        {sectionIndex < totalSections - 1 && (
           <button
             onClick={() => setSectionIndex(Math.min(totalSections - 1, sectionIndex + 1))}
             aria-label="Next section"
@@ -399,8 +411,8 @@ export default function Home() {
               <path d="M12 16l6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
