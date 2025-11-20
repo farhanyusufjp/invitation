@@ -17,6 +17,13 @@ export const metadata: Metadata = {
   description: "An invitation for a designer to share their work on Dribbble",
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
