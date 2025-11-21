@@ -183,7 +183,7 @@ export default function Home() {
     const wrapper = dinoWrapperRef.current;
     if (!wrapper) return;
 
-    const emojis = ['💖', '🌹', '🥰'];
+    const emojis = ['💖', '🌹', '🥰','💩',];
 
     for (let i = 0; i < count; i++) {
       const span = document.createElement('span');
@@ -228,7 +228,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-[#ea4c89] to-[#d64279] flex items-center justify-center p-0 overflow-hidden relative">
+    <div className="min-h-screen bg-linear-to-br from-[#22c55e] to-[#16a34a] flex items-center justify-center p-0 overflow-hidden relative">
       {/* sections wrapper: two full-height sections stacked vertically; movement via buttons only */}
       <div ref={sectionsRef} className="w-full relative" style={{height: `${totalSections * 100}vh`}}>
         {/* Section 1 (hero + ticket) */}
@@ -245,9 +245,9 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-sm md:text-lg font-light leading-relaxed px-4 md:px-0">
-                An invitation for<br />
-                my beloved to share<br /> 
-                a moment with me.
+                ini aku iseng<br />
+               pengen bikin undangan<br /> 
+               iseng aja tapi ini mah 🐶🍆
               </p>
             </div>
 
@@ -259,8 +259,8 @@ export default function Home() {
                   <div style={{position: 'absolute', inset: 0, backfaceVisibility: 'hidden', borderRadius: 20}}>
                     <div className="relative w-full h-full flex flex-col items-center justify-center">
                       <div className="text-center space-y-3 md:space-y-6 px-2 md:px-4">
-                        <h2 className="text-[#ea4c89] text-xs md:text-sm font-light tracking-widest">Dear sweetheart 💖</h2>
-                        <div className="text-[#ea4c89] text-lg md:text-2xl font-script italic max-w-32 md:max-w-40 mx-auto leading-tight">Syafiera Muraqbah Ahdiatuzzati</div>
+                        <h2 className="text-[#ea4c89] text-xs md:text-sm font-light tracking-widest">pacarnya aku</h2>
+                        <div className="text-[#ea4c89] text-lg md:text-2xl font-script italic max-w-32 md:max-w-40 mx-auto leading-tight">nazwa celalu cayang jano uyeah</div>
                         <div className="w-8 h-8 md:w-12 md:h-12 mx-auto" aria-hidden>
                           <span style={{lineHeight:1}} className="text-xl md:text-2xl">🌹</span> 
                         </div>
@@ -278,7 +278,7 @@ export default function Home() {
                     <div className="relative w-full h-full flex flex-col items-center justify-center">
                       <div className="text-center space-y-3 md:space-y-6 px-2 md:px-4">
                         <h2 className="text-[#ea4c89] text-xs md:text-sm font-light tracking-widest">invitation</h2>
-                        <div className="text-[#ea4c89] text-lg md:text-2xl font-script italic max-w-32 md:max-w-40 mx-auto leading-tight">"I want to invite my partner somewhere."</div>
+                        <div className="text-[#ea4c89] text-lg md:text-2xl font-script italic max-w-32 md:max-w-40 mx-auto leading-tight">"nanti kita main ke alamat dibawah ini"</div>
                         <div className="w-8 h-8 md:w-12 md:h-12 mx-auto" aria-hidden>
                           <span style={{lineHeight:1}} className="text-xl md:text-2xl">🌹</span>
                         </div>
@@ -304,7 +304,7 @@ export default function Home() {
               {/* Embed Google Maps using provided link. If iframe blocked, clicking opens the link in a new tab. */}
               <iframe
                 title="map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d50361.27323837043!2d106.93910621138605!3d-6.302867752584137!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f348293e1ad3%3A0xeb360c2c015ef668!2sNustro%20-%20Tebet%20Skyline!5e0!3m2!1sid!2sid!4v1763630109181!5m2!1sid!2sid"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3588.2658922776905!2d106.83184857453311!3d-6.372961662339127!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ec093dabf58d%3A0xd3365350a2ebe2f!2sMARGOCITY!5e1!3m2!1sen!2sid!4v1763710280013!5m2!1sen!2sid"
                 className="absolute inset-0 w-full h-full border-0"
                 style={{minHeight: '300px'}}
                 allowFullScreen
@@ -330,28 +330,28 @@ export default function Home() {
                       <div className="w-5 md:w-6 flex items-start justify-center pt-0.5">
                         <i className="fa-solid fa-map-marker-alt text-[#ea4c89] text-sm md:text-base" aria-hidden />
                       </div>
-                      <span className="leading-relaxed text-sm md:text-base">Nustro, Tebet</span>
+                      <span className="leading-relaxed text-sm md:text-base">Margo</span>
                     </li>
 
                     <li className="flex items-start gap-2 md:gap-3">
                       <div className="w-5 md:w-6 flex items-start justify-center pt-0.5">
                         <i className="fa-solid fa-city text-[#ea4c89] text-sm md:text-base" aria-hidden />
                       </div>
-                      <span className="leading-relaxed text-sm md:text-base">city light</span>
+                      <span className="leading-relaxed text-sm md:text-base">belanja</span>
                     </li>
 
                     <li className="flex items-start gap-2 md:gap-3">
                       <div className="w-5 md:w-6 flex items-start justify-center pt-0.5">
                         <i className="fa-solid fa-utensils text-[#ea4c89] text-sm md:text-base" aria-hidden />
                       </div>
-                      <span className="leading-relaxed text-sm md:text-base">Makanan inysaAllah ada banyak (mayoritas daging)</span>
+                      <span className="leading-relaxed text-sm md:text-base">makannya belom tau apaan</span>
                     </li>
 
                     <li className="flex items-start gap-2 md:gap-3">
                       <div className="w-5 md:w-6 flex items-start justify-center pt-0.5">
                         <i className="fa-solid fa-tshirt text-[#ea4c89] text-sm md:text-base" aria-hidden />
                       </div>
-                      <span className="leading-relaxed text-sm md:text-base">Nanti aku akan berpakaian warna coklat (maaf yang tersedia ini di lemari aku maaf ga prepare)</span>
+                      <span className="leading-relaxed text-sm md:text-base">seragam kerja aja kita, namanya juga pulang kerja</span>
                     </li>
 
                     <li className="flex items-start gap-2 md:gap-3">
