@@ -57,7 +57,7 @@ export default function Home() {
 
     if (ticket && ticketInner) {
       // ensure 3D preserved
-      gsap.set(ticketInner, { transformStyle: 'preserve-3d', transformPerspective: 1400 });
+      gsap.set(ticketInner, { transformStyle: 'preserve-3d', transformPerspective: 1400, webkitTransformStyle: 'preserve-3d' });
 
       // horizontal flip: rotateY between 0 and 180 (yoyo) - slower for a calmer effect
       flip = gsap.to(ticketInner, {
@@ -266,11 +266,12 @@ export default function Home() {
               className="flex justify-center cursor-pointer"
               style={{transform: 'rotate(-6deg) rotateX(8deg)', transformOrigin: '50% 50%'}}
             >
-              <div style={{perspective: 1400}}>
+              <div style={{perspective: 1400, WebkitPerspective: 1400}}>
                 <div
                   ref={ticketInnerRef}
                   style={{
                     transformStyle: 'preserve-3d',
+                    WebkitTransformStyle: 'preserve-3d',
                     width: 'min(200px, 52vw)',
                     height: 'min(460px, 56vh)',
                     borderRadius: 24,
@@ -279,7 +280,7 @@ export default function Home() {
                   className="relative"
                 >
                   {/* Front face */}
-                  <div style={{position: 'absolute', inset: 0, backfaceVisibility: 'hidden', borderRadius: 24, background: 'linear-gradient(160deg, #fffaf8 0%, #fff0ee 100%)'}}>
+                  <div style={{position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', borderRadius: 24, background: 'linear-gradient(160deg, #fffaf8 0%, #fff0ee 100%)'}}>
                     <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden" style={{borderRadius: 24}}>
                       <div className="absolute top-0 inset-x-0 h-1.5" style={{borderRadius: '24px 24px 0 0', background: 'linear-gradient(90deg, #f9a8d4, #ec4899, #f9a8d4)'}} />
                       <div style={{position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(rgba(236,72,153,0.07) 1px, transparent 1px)', backgroundSize: '8px 8px'}} />
@@ -301,7 +302,7 @@ export default function Home() {
                   </div>
 
                   {/* Back face */}
-                  <div style={{position: 'absolute', inset: 0, transform: 'rotateY(180deg)', backfaceVisibility: 'hidden', borderRadius: 24, background: 'linear-gradient(160deg, #fff5f8 0%, #ffeff7 100%)'}}>
+                  <div style={{position: 'absolute', inset: 0, transform: 'rotateY(180deg)', WebkitTransform: 'rotateY(180deg)', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', borderRadius: 24, background: 'linear-gradient(160deg, #fff5f8 0%, #ffeff7 100%)'}}>
                     <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden" style={{borderRadius: 24}}>
                       <div className="absolute top-0 inset-x-0 h-1.5" style={{borderRadius: '24px 24px 0 0', background: 'linear-gradient(90deg, #fda4af, #f43f5e, #fda4af)'}} />
                       <div style={{position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(rgba(244,63,94,0.07) 1px, transparent 1px)', backgroundSize: '8px 8px'}} />
