@@ -107,58 +107,58 @@ export default function Home() {
     };
   }, []);
 
-  // disable native scrolling (wheel/touch/keys) so navigation only via our buttons/click
+  // lock scroll on all devices
   useEffect(() => {
-    const prevent = (e: Event) => {
-      e.preventDefault();
-    };
-
+    const prevent = (e: Event) => e.preventDefault();
     const preventKey = (e: KeyboardEvent) => {
-      // prevent arrow keys, space, page up/down from scrolling
-      const keys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', ' ', 'Spacebar'];
-      if (keys.includes(e.key)) {
-        e.preventDefault();
-      }
+      if (['ArrowUp','ArrowDown','PageUp','PageDown',' ','Spacebar'].includes(e.key)) e.preventDefault();
     };
-
-    // Only disable scroll on desktop (width >= 768px)
-    const isMobile = window.innerWidth < 768;
-    
-    if (!isMobile) {
-      // hide overflow as a fallback
-      const html = document.documentElement;
-      const body = document.body;
-      const prevHtmlOverflow = html.style.overflow;
-      const prevBodyOverflow = body.style.overflow;
-      html.style.overflow = 'hidden';
-      body.style.overflow = 'hidden';
-
-      window.addEventListener('wheel', prevent as EventListener, { passive: false });
-      window.addEventListener('touchmove', prevent as EventListener, { passive: false });
-      window.addEventListener('keydown', preventKey as any, { passive: false });
-
-      return () => {
-        html.style.overflow = prevHtmlOverflow || '';
-        body.style.overflow = prevBodyOverflow || '';
-        window.removeEventListener('wheel', prevent as EventListener);
-        window.removeEventListener('touchmove', prevent as EventListener);
-        window.removeEventListener('keydown', preventKey as any);
-      };
-    }
+    const html = document.documentElement;
+    const body = document.body;
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    window.addEventListener('wheel', prevent as EventListener, { passive: false });
+    window.addEventListener('keydown', preventKey as any, { passive: false });
+    return () => {
+      html.style.overflow = '';
+      body.style.overflow = '';
+      window.removeEventListener('wheel', prevent as EventListener);
+      window.removeEventListener('keydown', preventKey as any);
+    };
   }, []);
 
-  // animate section transitions when sectionIndex changes
+  // animate section transitions on all devices
   useEffect(() => {
     const el = sectionsRef.current;
     if (!el) return;
-    
-    // Only use GSAP animation on desktop
-    const isMobile = window.innerWidth < 768;
-    if (!isMobile) {
-      const y = -sectionIndex * window.innerHeight;
-      gsap.to(el, { y, duration: 0.8, ease: 'power2.inOut' });
-    }
+    const y = -sectionIndex * window.innerHeight;
+    gsap.to(el, { y, duration: 0.7, ease: 'power2.inOut' });
   }, [sectionIndex]);
+
+  // swipe gesture for mobile
+  useEffect(() => {
+    let startY = 0;
+    let startX = 0;
+    const onStart = (e: TouchEvent) => {
+      startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
+    };
+    const onEnd = (e: TouchEvent) => {
+      const dy = startY - e.changedTouches[0].clientY;
+      const dx = Math.abs(startX - e.changedTouches[0].clientX);
+      if (Math.abs(dy) > 50 && Math.abs(dy) > dx) {
+        setSectionIndex(prev =>
+          dy > 0 ? Math.min(totalSections - 1, prev + 1) : Math.max(0, prev - 1)
+        );
+      }
+    };
+    window.addEventListener('touchstart', onStart, { passive: true });
+    window.addEventListener('touchend', onEnd, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', onStart);
+      window.removeEventListener('touchend', onEnd);
+    };
+  }, []);
 
   // Ensure the dino GIF keeps replaying by resetting its src periodically.
   useEffect(() => {
@@ -228,173 +228,255 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-[#22c55e] to-[#16a34a] flex items-center justify-center p-0 overflow-hidden relative">
-      {/* sections wrapper: two full-height sections stacked vertically; movement via buttons only */}
-      <div ref={sectionsRef} className="w-full relative" style={{height: `${totalSections * 100}vh`}}>
-        {/* Section 1 (hero + ticket) */}
-        <section className="w-full h-screen flex items-center justify-center px-4 py-8 md:p-8">
-          <div className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 items-center">
-            {/* Left Section */}
-            <div
-              ref={leftTextRef}
-              className="text-white text-center md:text-right space-y-2 md:space-y-4"
-            >
-              <div className="w-12 h-12 md:w-16 md:h-16 mx-auto md:ml-auto md:mr-0 flex items-center justify-center" aria-hidden>
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center">
-                  <span style={{lineHeight:1}} className="text-xl md:text-2xl">🥰</span>
-                </div>
+    <div className="h-screen overflow-hidden relative" style={{background: '#0c0818'}}>
+
+      {/* ── Ambient background glows ── */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute rounded-full" style={{top: '-12rem', left: '-12rem', width: '44rem', height: '44rem', background: 'radial-gradient(circle, rgba(236,72,153,0.22) 0%, transparent 70%)'}} />
+        <div className="absolute rounded-full" style={{top: '28%', right: '-10rem', width: '38rem', height: '38rem', background: 'radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%)'}} />
+        <div className="absolute rounded-full" style={{bottom: '-10rem', left: '28%', width: '38rem', height: '38rem', background: 'radial-gradient(circle, rgba(244,63,94,0.14) 0%, transparent 70%)'}} />
+      </div>
+
+      {/* ── Sections wrapper ── */}
+      <div ref={sectionsRef} className="absolute inset-x-0 top-0 w-full z-10" style={{height: `${totalSections * 100}vh`}}>
+
+        {/* ── Section 1: Hero + Ticket ── */}
+        <section className="w-full h-screen flex items-center justify-center px-5 py-6 md:p-12">
+          <div className="w-full max-w-5xl mx-auto flex flex-col md:grid md:grid-cols-3 gap-4 md:gap-10 items-center">
+
+            {/* Top text (mobile) / Left text (desktop) */}
+            <div ref={leftTextRef} className="text-center md:text-right space-y-2 md:space-y-6">
+              <div
+                className="inline-flex items-center gap-2 text-pink-300 text-xs font-medium tracking-widest uppercase"
+                style={{padding: '6px 14px', borderRadius: 9999, background: 'rgba(236,72,153,0.12)', border: '1px solid rgba(236,72,153,0.28)'}}
+              >
+                <span>💌</span> Surat Undangan Resmi
               </div>
-              <p className="text-sm md:text-lg font-light leading-relaxed px-4 md:px-0">
-                ini aku iseng<br />
-               pengen bikin undangan<br /> 
-               iseng aja tapi ini mah 🐶🍆
+              <p className="text-white/55 text-xs md:text-base font-light leading-relaxed">
+                Dengan segala hormat<br />
+                dan keberanian yang dikumpulkan berminggu-minggu,<br />
+                Sekar dengan ini resmi diundang. 🌹
               </p>
             </div>
 
             {/* Center Ticket */}
-            <div ref={ticketRef} onClick={() => setSectionIndex(1)} className="flex justify-center cursor-pointer" style={{transform: 'rotate(-8deg) rotateX(6deg)', transformOrigin: '50% 50%'}}>
-              <div style={{perspective: 1400}} className="relative">
-                <div ref={ticketInnerRef} style={{transformStyle: 'preserve-3d', width: 'min(220px, 60vw)', height: 'min(520px, 75vh)'}} className="relative bg-[#f5f0e8] rounded-[20px] md:rounded-[28px] shadow-2xl p-4 md:p-6 flex items-center justify-center">
+            <div
+              ref={ticketRef}
+              onClick={() => setSectionIndex(1)}
+              className="flex justify-center cursor-pointer"
+              style={{transform: 'rotate(-6deg) rotateX(8deg)', transformOrigin: '50% 50%'}}
+            >
+              <div style={{perspective: 1400}}>
+                <div
+                  ref={ticketInnerRef}
+                  style={{
+                    transformStyle: 'preserve-3d',
+                    width: 'min(200px, 52vw)',
+                    height: 'min(460px, 56vh)',
+                    borderRadius: 24,
+                    boxShadow: '0 32px 80px -8px rgba(236,72,153,0.45), 0 12px 32px -4px rgba(0,0,0,0.6)',
+                  }}
+                  className="relative"
+                >
                   {/* Front face */}
-                  <div style={{position: 'absolute', inset: 0, backfaceVisibility: 'hidden', borderRadius: 20}}>
-                    <div className="relative w-full h-full flex flex-col items-center justify-center">
-                      <div className="text-center space-y-3 md:space-y-6 px-2 md:px-4">
-                        <h2 className="text-[#ea4c89] text-xs md:text-sm font-light tracking-widest">pacarnya aku</h2>
-                        <div className="text-[#ea4c89] text-lg md:text-2xl font-script italic max-w-32 md:max-w-40 mx-auto leading-tight">nazwa celalu cayang jano uyeah</div>
-                        <div className="w-8 h-8 md:w-12 md:h-12 mx-auto" aria-hidden>
-                          <span style={{lineHeight:1}} className="text-xl md:text-2xl">🌹</span> 
-                        </div>
+                  <div style={{position: 'absolute', inset: 0, backfaceVisibility: 'hidden', borderRadius: 24, background: 'linear-gradient(160deg, #fffaf8 0%, #fff0ee 100%)'}}>
+                    <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden" style={{borderRadius: 24}}>
+                      <div className="absolute top-0 inset-x-0 h-1.5" style={{borderRadius: '24px 24px 0 0', background: 'linear-gradient(90deg, #f9a8d4, #ec4899, #f9a8d4)'}} />
+                      <div style={{position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(rgba(236,72,153,0.07) 1px, transparent 1px)', backgroundSize: '8px 8px'}} />
+                      <div className="text-center space-y-3 md:space-y-4 px-5 py-4 relative z-10">
+                        <p className="text-pink-400/80 font-medium uppercase" style={{fontSize: 10, letterSpacing: '0.25em'}}>Kepada Yth.</p>
+                        <div className="mx-auto h-px" style={{width: 32, background: 'linear-gradient(90deg, transparent, #f9a8d4, transparent)'}} />
+                        <div className="text-[#db2777] font-bold italic leading-snug" style={{fontSize: 'clamp(16px, 4vw, 22px)'}}>Sekar</div>
+                        <p className="text-rose-400/80 text-sm italic leading-relaxed">Diharap berkenan hadir. Penolakan akan diterima dengan lapang dada (bohong). 🥲</p>
+                        <div className="text-2xl py-1">🌹</div>
+                        <div className="mx-auto h-px" style={{width: 32, background: 'linear-gradient(90deg, transparent, #f9a8d4, transparent)'}} />
+                        <p className="text-pink-300/55 uppercase" style={{fontSize: 9, letterSpacing: '0.3em'}}>Ketuk untuk Membuka</p>
                       </div>
-
-                      {/* subtle paper texture overlay */}
-                      <div style={{position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(rgba(0,0,0,0.012) 1px, transparent 1px)', backgroundSize: '6px 6px', opacity: 1}} />
-
-                      <div className="absolute inset-4 md:inset-6 border-2 border-[#ea4c89] rounded-2xl md:rounded-[22px] opacity-80" />
+                      {/* Corner brackets */}
+                      <div className="absolute top-5 left-5 w-5 h-5 border-t-2 border-l-2 border-pink-300/50" />
+                      <div className="absolute top-5 right-5 w-5 h-5 border-t-2 border-r-2 border-pink-300/50" />
+                      <div className="absolute bottom-5 left-5 w-5 h-5 border-b-2 border-l-2 border-pink-300/50" />
+                      <div className="absolute bottom-5 right-5 w-5 h-5 border-b-2 border-r-2 border-pink-300/50" />
                     </div>
                   </div>
 
-                  {/* Back face (invitation message) */}
-                  <div style={{position: 'absolute', inset: 0, transform: 'rotateY(180deg)', backfaceVisibility: 'hidden', borderRadius: 20}}>
-                    <div className="relative w-full h-full flex flex-col items-center justify-center">
-                      <div className="text-center space-y-3 md:space-y-6 px-2 md:px-4">
-                        <h2 className="text-[#ea4c89] text-xs md:text-sm font-light tracking-widest">invitation</h2>
-                        <div className="text-[#ea4c89] text-lg md:text-2xl font-script italic max-w-32 md:max-w-40 mx-auto leading-tight">"nanti kita main ke alamat dibawah ini"</div>
-                        <div className="w-8 h-8 md:w-12 md:h-12 mx-auto" aria-hidden>
-                          <span style={{lineHeight:1}} className="text-xl md:text-2xl">🌹</span>
-                        </div>
+                  {/* Back face */}
+                  <div style={{position: 'absolute', inset: 0, transform: 'rotateY(180deg)', backfaceVisibility: 'hidden', borderRadius: 24, background: 'linear-gradient(160deg, #fff5f8 0%, #ffeff7 100%)'}}>
+                    <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden" style={{borderRadius: 24}}>
+                      <div className="absolute top-0 inset-x-0 h-1.5" style={{borderRadius: '24px 24px 0 0', background: 'linear-gradient(90deg, #fda4af, #f43f5e, #fda4af)'}} />
+                      <div style={{position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(rgba(244,63,94,0.07) 1px, transparent 1px)', backgroundSize: '8px 8px'}} />
+                      <div className="text-center space-y-3 md:space-y-4 px-5 py-4 relative z-10">
+                        <p className="text-rose-400/80 font-medium uppercase" style={{fontSize: 10, letterSpacing: '0.25em'}}>UNDANGAN RESMI</p>
+                        <div className="mx-auto h-px" style={{width: 32, background: 'linear-gradient(90deg, transparent, #fda4af, transparent)'}} />
+                        <p className="text-[#be185d] text-base italic leading-relaxed">"Dengan hormat, mari kita nikmati secangkir kopi bersama. Kehadiran Anda tidak dapat diganggu gugat."</p>
+                        <div className="text-2xl py-1">☕</div>
+                        <div className="mx-auto h-px" style={{width: 32, background: 'linear-gradient(90deg, transparent, #fda4af, transparent)'}} />
+                        <p className="text-rose-300/55 uppercase" style={{fontSize: 9, letterSpacing: '0.3em'}}>Ttd. Orang Yang Deg-degan ☕</p>
                       </div>
-
-                      <div style={{position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(rgba(0,0,0,0.012) 1px, transparent 1px)', backgroundSize: '6px 6px', opacity: 1}} />
-
-                      <div className="absolute inset-4 md:inset-6 border-2 border-[#ea4c89] rounded-2xl md:rounded-[22px] opacity-80" />
+                      <div className="absolute top-5 left-5 w-5 h-5 border-t-2 border-l-2 border-rose-300/50" />
+                      <div className="absolute top-5 right-5 w-5 h-5 border-t-2 border-r-2 border-rose-300/50" />
+                      <div className="absolute bottom-5 left-5 w-5 h-5 border-b-2 border-l-2 border-rose-300/50" />
+                      <div className="absolute bottom-5 right-5 w-5 h-5 border-b-2 border-r-2 border-rose-300/50" />
                     </div>
                   </div>
 
                 </div>
               </div>
             </div>
+
+            {/* Right decorative */}
+            <div ref={rightTextRef} className="hidden md:flex flex-col items-start gap-4">
+              <p className="text-white/35 text-sm font-light leading-relaxed italic">"sentuh kartunya<br/>untuk selengkapnya"</p>
+              <div className="flex flex-col gap-1">
+                <span className="text-xl">🌹</span>
+                <span className="text-xl opacity-50">🌹</span>
+                <span className="text-xl opacity-25">🌹</span>
+              </div>
+            </div>
+
           </div>
         </section>
 
-        {/* Section 2: Map + Info panel (matches provided layout) */}
-        <section className="w-full h-screen flex items-center justify-center px-4 py-6 md:p-8">
-          <div className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 items-stretch h-full">
-            {/* Left: Map area (spans 2 columns on md) */}
-            <div className="md:col-span-2 relative rounded-xl md:rounded-2xl overflow-hidden shadow-inner bg-[linear-gradient(180deg,#eef2f5,#f7f7fb)] min-h-[300px] md:min-h-0">
-              {/* Embed Google Maps using provided link. If iframe blocked, clicking opens the link in a new tab. */}
+        {/* ── Section 2: Map + Info ── */}
+        <section className="w-full h-screen flex items-center justify-center px-4 py-4 md:p-10 overflow-hidden">
+          <div className="w-full max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-3 gap-3 md:gap-6 h-full pt-4 pb-16 md:py-6">
+
+            {/* Map — fixed short height on mobile, flex-1 on desktop */}
+            <div
+              className="md:col-span-2 relative rounded-2xl overflow-hidden flex-shrink-0"
+              style={{height: 'clamp(180px, 38vh, 400px)', boxShadow: '0 25px 60px -10px rgba(0,0,0,0.55)', outline: '1px solid rgba(255,255,255,0.07)'}}
+            >
               <iframe
                 title="map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3588.2658922776905!2d106.83184857453311!3d-6.372961662339127!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ec093dabf58d%3A0xd3365350a2ebe2f!2sMARGOCITY!5e1!3m2!1sen!2sid!4v1763710280013!5m2!1sen!2sid"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14355.377290411883!2d106.79851412773132!3d-6.289726284520299!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f10010ac28bb%3A0xc2da01728ee3a8f5!2sStarbucks%20Ampera%20Raya%20Jakarta!5e1!3m2!1sen!2sid!4v1774925726213!5m2!1sen!2sid"
                 className="absolute inset-0 w-full h-full border-0"
-                style={{minHeight: '300px'}}
+                style={{minHeight: '280px'}}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
-
-              {/* search bar removed as requested */}
-
-              {/* left floating menu removed per request */}
-
-              {/* decorative markers removed per request */}
-
-              {/* bottom toolbar removed per request */}
             </div>
 
-            {/* Right: Info card replaced with user-specified list */}
-            <div className="md:col-span-1 flex items-center justify-center">
-              <div className="w-full bg-white rounded-xl md:rounded-2xl shadow-lg overflow-hidden relative" style={{maxWidth: 420}}>
-                <div className="p-4 md:p-8">
-                  <ul className="text-left pl-0 space-y-3 md:space-y-4 text-gray-700">
-                    <li className="flex items-start gap-2 md:gap-3">
-                      <div className="w-5 md:w-6 flex items-start justify-center pt-0.5">
-                        <i className="fa-solid fa-map-marker-alt text-[#ea4c89] text-sm md:text-base" aria-hidden />
-                      </div>
-                      <span className="leading-relaxed text-sm md:text-base">Margo</span>
-                    </li>
-
-                    <li className="flex items-start gap-2 md:gap-3">
-                      <div className="w-5 md:w-6 flex items-start justify-center pt-0.5">
-                        <i className="fa-solid fa-city text-[#ea4c89] text-sm md:text-base" aria-hidden />
-                      </div>
-                      <span className="leading-relaxed text-sm md:text-base">belanja</span>
-                    </li>
-
-                    <li className="flex items-start gap-2 md:gap-3">
-                      <div className="w-5 md:w-6 flex items-start justify-center pt-0.5">
-                        <i className="fa-solid fa-utensils text-[#ea4c89] text-sm md:text-base" aria-hidden />
-                      </div>
-                      <span className="leading-relaxed text-sm md:text-base">makannya belom tau apaan</span>
-                    </li>
-
-                    <li className="flex items-start gap-2 md:gap-3">
-                      <div className="w-5 md:w-6 flex items-start justify-center pt-0.5">
-                        <i className="fa-solid fa-tshirt text-[#ea4c89] text-sm md:text-base" aria-hidden />
-                      </div>
-                      <span className="leading-relaxed text-sm md:text-base">seragam kerja aja kita, namanya juga pulang kerja</span>
-                    </li>
-
-                    <li className="flex items-start gap-2 md:gap-3">
-                      <div className="w-5 md:w-6 flex items-start justify-center pt-0.5">
-                        <i className="fa-solid fa-calendar text-[#ea4c89] text-sm md:text-base" aria-hidden />
-                      </div>
-                      <span className="leading-relaxed text-sm md:text-base">Jumat, 21 Nov 2025</span>
-                    </li>
-
-                    <li className="flex items-start gap-2 md:gap-3">
-                      <div className="w-5 md:w-6 flex items-start justify-center pt-0.5">
-                        <i className="fa-solid fa-briefcase text-[#ea4c89] text-sm md:text-base" aria-hidden />
-                      </div>
-                      <span className="leading-relaxed text-sm md:text-base">setelah pulang kantor</span>
-                    </li>
+            {/* Info card */}
+            <div className="md:col-span-1 flex items-start md:items-center justify-center flex-1 min-h-0">
+              <div
+                className="w-full rounded-2xl overflow-hidden"
+                style={{
+                  maxWidth: 420,
+                  background: 'rgba(255,255,255,0.06)',
+                  backdropFilter: 'blur(24px)',
+                  WebkitBackdropFilter: 'blur(24px)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  boxShadow: '0 25px 60px -10px rgba(0,0,0,0.4)',
+                }}
+              >
+                <div className="px-4 py-2.5" style={{background: 'linear-gradient(135deg, rgba(236,72,153,0.65), rgba(251,113,133,0.65))'}}>
+                  <h3 className="text-white font-semibold text-xs md:text-sm tracking-wide">☕ Detail Pertemuan</h3>
+                </div>
+                <div className="px-4 py-3 md:p-6">
+                  <ul className="text-left space-y-2 md:space-y-4">
+                    {([
+                      {icon: 'fa-mug-hot', text: 'Starbucks Ampera Raya Jakarta'},
+                      {icon: 'fa-map-marker-alt', text: 'Jl. Ampera Raya No.4, RT.4/RW.4, East Cilandak, Pasar Minggu, South Jakarta City, Jakarta'},
+                      {icon: 'fa-mug-hot', text: 'Agenda: Ngopi, ngemil nyantai, ngonrolin apa aja bebass'},
+                      {icon: 'fa-shirt', text: 'Dress code: bebas rapi '},
+                      {icon: 'fa-calendar', text: 'Rabu, 01 Apr 2026'},
+                      {icon: 'fa-clock', text: 'Setelah jam kantor resmi berakhir'},
+                    ] as {icon: string; text: string}[]).map(({icon, text}, i) => (
+                      <li key={i} className="flex items-start gap-2 md:gap-3">
+                        <div
+                          className="flex items-center justify-center flex-shrink-0"
+                          style={{width: 22, height: 22, borderRadius: 9999, background: 'rgba(236,72,153,0.18)', marginTop: 1}}
+                        >
+                          <i className={`fa-solid ${icon} text-pink-400`} style={{fontSize: 9}} aria-hidden />
+                        </div>
+                        <span className="text-white/75 leading-relaxed text-xs md:text-sm">{text}</span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
             </div>
+
           </div>
         </section>
 
-        {/* Section 3 (Thank you) */}
+        {/* ── Section 3: Dino click ── */}
         <section className="w-full h-screen flex items-center justify-center px-4 py-8 md:p-8">
-          {/* <img src="/thankyou.png" alt="Thank you" className="w-64" /> */}
-          <div className="flex flex-col items-center gap-2 md:gap-3">
-            <div ref={dinoWrapperRef} onClick={() => spawnParticles(100)} className="w-32 h-32 md:w-40 md:h-40 relative cursor-pointer">
-              <img ref={dinoRef} src="/dino.gif" alt="dino" className="w-full h-full object-contain" />
+          <div className="flex flex-col items-center gap-5 md:gap-7">
+            <div className="relative flex items-center justify-center">
+              {/* outer glow */}
+              <div
+                className="absolute rounded-full pointer-events-none"
+                style={{inset: '-3rem', background: 'radial-gradient(circle, rgba(236,72,153,0.22) 0%, transparent 65%)'}}
+              />
+              {/* ring */}
+              <div
+                className="relative flex items-center justify-center"
+                style={{
+                  width: 'min(168px, 46vw)',
+                  height: 'min(168px, 46vw)',
+                  borderRadius: 9999,
+                  border: '1px solid rgba(236,72,153,0.28)',
+                  boxShadow: '0 0 0 8px rgba(236,72,153,0.06)',
+                }}
+              >
+                <div
+                  ref={dinoWrapperRef}
+                  onClick={() => spawnParticles(100)}
+                  className="relative cursor-pointer"
+                  style={{width: '80%', height: '80%'}}
+                >
+                  <img ref={dinoRef} src="/dino.gif" alt="dino" className="w-full h-full object-contain" />
+                </div>
+              </div>
             </div>
-
-            <span ref={clickTextRef} style={{lineHeight:1, opacity: 1}} className="text-lg md:text-xl">click me!</span>
+            <span ref={clickTextRef} style={{lineHeight: 1, opacity: 1}} className="text-white/50 text-base md:text-lg font-light tracking-widest">
+              klik sini dong~ ✨
+            </span>
           </div>
         </section>
+
       </div>
-      {/* navigation buttons fixed: up and down - only show on desktop */}
-      <div className="hidden md:flex fixed right-3 md:right-6 top-1/2 transform -translate-y-1/2 flex-col gap-2 md:gap-3 z-50">
+
+      {/* ── Desktop: dot indicators + up/down buttons ── */}
+      <div className="hidden md:flex fixed right-6 md:right-8 top-1/2 -translate-y-1/2 flex-col gap-3 z-50 items-center">
+        {/* section dots */}
+        <div className="flex flex-col gap-2 items-center mb-1">
+          {Array.from({length: totalSections}).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setSectionIndex(i)}
+              aria-label={`Go to section ${i + 1}`}
+              style={{
+                width: 6,
+                height: i === sectionIndex ? 24 : 6,
+                borderRadius: 9999,
+                background: i === sectionIndex ? '#f472b6' : 'rgba(255,255,255,0.25)',
+                transition: 'all 0.3s ease',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+              }}
+            />
+          ))}
+        </div>
+
         {sectionIndex > 0 && (
           <button
             onClick={() => setSectionIndex(Math.max(0, sectionIndex - 1))}
             aria-label="Previous section"
-            className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/90 shadow-lg flex items-center justify-center hover:bg-white transition-colors active:scale-95"
+            style={{
+              width: 40, height: 40, borderRadius: 9999,
+              background: 'rgba(255,255,255,0.09)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.18)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', transition: 'all 0.2s',
+            }}
           >
-            <svg className="w-4 h-4 md:w-5 md:h-5 text-[#ea4c89]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
               <path d="M12 8l-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M12 8l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -404,15 +486,46 @@ export default function Home() {
           <button
             onClick={() => setSectionIndex(Math.min(totalSections - 1, sectionIndex + 1))}
             aria-label="Next section"
-            className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/90 shadow-lg flex items-center justify-center hover:bg-white transition-colors active:scale-95"
+            style={{
+              width: 40, height: 40, borderRadius: 9999,
+              background: 'rgba(255,255,255,0.09)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.18)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', transition: 'all 0.2s',
+            }}
           >
-            <svg className="w-4 h-4 md:w-5 md:h-5 text-[#ea4c89]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
               <path d="M12 16l-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M12 16l6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
         )}
       </div>
+
+      {/* ── Mobile: bottom dot navigation ── */}
+      <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-50 items-center">
+        {Array.from({length: totalSections}).map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setSectionIndex(i)}
+            aria-label={`Go to section ${i + 1}`}
+            style={{
+              height: 6,
+              width: i === sectionIndex ? 24 : 6,
+              borderRadius: 9999,
+              background: i === sectionIndex ? '#f472b6' : 'rgba(255,255,255,0.3)',
+              transition: 'all 0.3s ease',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          />
+        ))}
+      </div>
+
+
     </div>
   );
 }
